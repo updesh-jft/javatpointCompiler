@@ -7,5 +7,5 @@ COPY ./src/server ./src/server
 RUN npm ci --quiet --only=production
 
 # environment variables
-ENV PORT=80
+ENV PORT=8888
 CMD [ "node", "src/server/index.js" ]
