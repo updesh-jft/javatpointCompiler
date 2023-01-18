@@ -50,11 +50,13 @@ class CRunner extends Runner {
   // execute the compiled file
   execute(directory, filename, options, callback) {
     const cmdRun = path.join(directory, `${filename}.out`);
+    let cons = "";
 
     // const executor = spawn('./Hello.out', [], options);
     const executor = spawn(cmdRun, [], options);
     executor.stdout.on('data', (output) => {
       console.log(String(output));
+      cons = cons.concat(String(output));
       callback('0', String(output)); // 0, no error
     });
     executor.stderr.on('data', (output) => {
@@ -63,6 +65,7 @@ class CRunner extends Runner {
     });
     executor.on('close', (output) => {
       this.log(`stdout: ${output}`);
+      callback('1', String(output), cons);
     });
   }
 

@@ -22,6 +22,7 @@ class JavaScriptRunner extends Runner {
     // set working directory for child_process
     const options = { cwd: directory };
     const argsRun = [];
+    let cons = "";
     argsRun[0] = file;
     console.log(`options: ${options}`);
     console.log(`argsRun: ${argsRun}`);
@@ -29,6 +30,7 @@ class JavaScriptRunner extends Runner {
     const executor = spawn('node', argsRun, options);
     executor.stdout.on('data', (output) => {
       console.log(String(output));
+      cons = cons.concat(String(output));
       callback('0', String(output)); // 0, no error
     });
     executor.stderr.on('data', (output) => {
@@ -37,6 +39,7 @@ class JavaScriptRunner extends Runner {
     });
     executor.on('close', (output) => {
       this.log(`stdout: ${output}`);
+      callback('1', String(output), cons);
     });
   }
 

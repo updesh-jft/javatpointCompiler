@@ -1,5 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const fs = require('fs');
+const path = require('path');
 
 const FileApi = require('./api/FileApi');
 const RunnerManager = require('./compiler/RunnerManager');
@@ -13,7 +15,7 @@ app.use(bodyParser.json());
 
 // serve static files
 app.use(express.static('dist'));
-
+app.use(express.static('./src/server/templates'));
 // Add headers
 app.use((req, res, next) => {
   // Website you wish to allow to connect
@@ -53,6 +55,25 @@ app.get('/api/file/:lang', (req, res) => {
 app.post('/api/run', (req, res) => {
   const file = req.body;
   console.log(`file.lang: ${file.lang}`, `file.code:${file.code}`);
-  RunnerManager.run(file.lang, file.code, res);
+  RunnerManager.run(file.lang, file.code, res, file.fileName);
 });
+
+app.post('/api/run/iframe', (req, res) => {
+  const file = req.body;
+  console.log(file);
+  RunnerManager.run(file.lang, file.code, res, file.fileName);
+});
+
+app.post('/api/run/deleteFile', (req, res) => {
+  const file = req.body;
+  const directory = path.join(__dirname, '../server/templates');
+  fs.unlink(`${directory}/${file.fileName}`, ((err) => {
+    if (err) console.log(err);
+    else {
+      console.log('\nDeleted file: example_file.txt', file.fileName);
+    }
+  }));
+  return res.send('file deleted');
+});
+
 app.listen(PORT, () => console.log(`Listening on port ${PORT}!`));

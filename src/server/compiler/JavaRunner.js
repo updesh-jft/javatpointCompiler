@@ -43,18 +43,22 @@ class JavaRunner extends Runner {
   // execute the compiled class file
   execute(filename, options, callback) {
     const argsRun = [];
+    let cons = "";
     argsRun[0] = filename;
     const executor = spawn('java', argsRun, options);
     executor.stdout.on('data', (output) => {
       console.log(String(output));
+      cons = cons.concat(String(output));
       callback('0', String(output)); // 0, no error
     });
     executor.stderr.on('data', (output) => {
       console.log(`stderr: ${String(output)}`);
       callback('2', String(output)); // 2, execution failure
     });
+
     executor.on('close', (output) => {
       this.log(`stdout: ${output}`);
+      callback('1', String(output), cons); // 2, execution failure
     });
   }
 

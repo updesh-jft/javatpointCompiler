@@ -22,12 +22,14 @@ class PythonRunner extends Runner {
     // set working directory for child_process
     const options = { cwd: directory };
     const argsRun = [];
+    let cons = "";
     argsRun[0] = file;
     console.log(`options: ${options}`);
     console.log(`argsRun: ${argsRun}`);
-    const executor = spawn('python', argsRun, options);
+    const executor = spawn('python3', argsRun, options);
     executor.stdout.on('data', (output) => {
       console.log(String(output));
+      cons = cons.concat(String(output));
       callback('0', String(output)); // 0, no error
     });
     executor.stderr.on('data', (output) => {
@@ -36,6 +38,7 @@ class PythonRunner extends Runner {
     });
     executor.on('close', (output) => {
       this.log(`stdout: ${output}`);
+      callback('1', String(output), cons);
     });
   }
 

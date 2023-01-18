@@ -1,4 +1,10 @@
+/* eslint-disable no-plusplus */
+/* eslint-disable guard-for-in */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-param-reassign */
+/* eslint-disable camelcase */
 const path = require('path');
+const fs = require('fs');
 const FileApi = require('../api/FileApi');
 const CRunner = require('./CRunner');
 const CppRunner = require('./CppRunner');
@@ -26,27 +32,82 @@ function Factory() {
   };
 }
 
+const checkJavaScriptFunction = (code) => {
+  const functionCall = [];
+  const matchCount = code.match(/function/g).length;
+  console.log('🚀 ~ file: RunnerManager.js:38 ~ matchCount', matchCount);
+  for (let i = 0; i < matchCount; i++) {
+    const fun = `${(code.split('function')[i + 1]).split('{')[0]};`;
+    if (!fun.includes('script')) {
+      functionCall.push(fun);
+    }
+  }
+
+  return functionCall;
+};
+
 module.exports = {
-  run(lang, code, res) {
-    const factory = new Factory();
-    const runner = factory.createRunner(lang.toLowerCase());
+  run(lang, code, res, fileNamee) {
+    function insert(main_string, ins_string, pos) {
+      if (typeof (pos) === 'undefined') {
+        pos = 0;
+      }
+      if (typeof (ins_string) === 'undefined') {
+        ins_string = '';
+      }
+      return main_string.slice(0, pos) + ins_string + main_string.slice(pos);
+    }
+    if (lang === 'xml' || lang === 'html') {
+      const directory = path.join(__dirname, '../templates');
+      const data = fs.readFileSync(`${directory}/${'html.html'}`, 'utf8');
+      if (code.includes('function') || code.includes('Function')) {
+        if (!code.includes('</script>')) {
+          code = `<script>${code}</script>`;
+        }
+        const functionCall = checkJavaScriptFunction(code);
+        console.log('script', code, functionCall);
+        functionCall.push('</script>');
+        code = code.replace('</script>', functionCall.toString().replace(/,/g, ''));
+      }
+      const stream = fs.createWriteStream(`${directory}/${fileNamee}.html`);
+      code = lang === 'xml' ? insert(data, code, 29) : code;
+      stream.write(code);
+      const url = '';
+      const fileName = '';
+      const result = {
+        url,
+        fileName
+      };
+      result.url = `http://localhost:8080/${fileNamee}.html`;
+      result.fileName = `${fileNamee}.html`;
+      res.end(JSON.stringify(result));
+    } else {
+      const factory = new Factory();
+      const runner = factory.createRunner(lang.toLowerCase());
 
-    const directory = path.join(__dirname, 'temp');
-    const file = path.join(directory, runner.defaultFile());
-    console.log(`file: ${file}`);
-    const filename = path.parse(file).name; // main
-    const extension = path.parse(file).ext; // .java
-    console.log(`filename: ${filename}`);
-    console.log(`extension: ${extension}`);
-
-    FileApi.saveFile(file, code, () => {
-      runner.run(file, directory, filename, extension, (status, message) => {
-        const result = {
-          status,
-          message,
-        };
-        res.end(JSON.stringify(result));
+      const directory = path.join(__dirname, '../templates');
+      const file = `${directory}/${fileNamee}`;
+      console.log(`file: ${file}`);
+      const filename = path.parse(`${directory}/${fileNamee}`).name; // main
+      const extension = path.parse(`${directory}/${fileNamee}`).ext; // .java
+      console.log(`filename: ${filename}`);
+      console.log(`extension: ${extension}`);
+      const stream = fs.createWriteStream(`${directory}/${fileNamee}`);
+      stream.write(code);
+      FileApi.saveFile(file, code, () => {
+        runner.run(file, directory, filename, extension, (status, message, output) => {
+          const result = {
+            status,
+            message,
+            output,
+            filename
+          };
+          if (status === '1') {
+            res.end(JSON.stringify(result));
+          }
+        });
       });
-    });
+    }
   },
 };
+

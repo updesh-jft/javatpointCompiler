@@ -28,6 +28,7 @@
     "file-loader": "^1.1.11",
     "mem": "^8.1.1",
     "mkdirp": "^0.5.1",
+    "fs": "0.0.1-security",
     "prop-types": "^15.8.0",
     "react": "^16.8.6",
     "react-ace": "^6.6.0",
