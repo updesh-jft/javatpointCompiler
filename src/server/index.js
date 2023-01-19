@@ -55,22 +55,26 @@ app.get('/api/file/:lang', (req, res) => {
 app.post('/api/run', (req, res) => {
   const file = req.body;
   console.log(`file.lang: ${file.lang}`, `file.code:${file.code}`);
-  RunnerManager.run(file.lang, file.code, res, file.fileName);
+  RunnerManager.run(file.lang, file.code, res, file.fileName, file.folderName);
 });
 
 app.post('/api/run/iframe', (req, res) => {
   const file = req.body;
   console.log(file);
-  RunnerManager.run(file.lang, file.code, res, file.fileName);
+  RunnerManager.run(file.lang, file.code, res, file.fileName, '');
 });
 
 app.post('/api/run/deleteFile', (req, res) => {
   const file = req.body;
   const directory = path.join(__dirname, '../server/templates');
+  if (file.lang === 'java') {
+    fs.rmSync(`${directory}/${file.fileName}`, { recursive: true });
+    return res.send('file deleted');
+  }
   fs.unlink(`${directory}/${file.fileName}`, ((err) => {
     if (err) console.log(err);
     else {
-      console.log('\nDeleted file: example_file.txt', file.fileName);
+      console.log('\nDeleted:', file.fileName);
     }
   }));
   return res.send('file deleted');

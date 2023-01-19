@@ -47,7 +47,7 @@ const checkJavaScriptFunction = (code) => {
 };
 
 module.exports = {
-  run(lang, code, res, fileNamee) {
+  run(lang, code, res, fileNamee, folderName) {
     function insert(main_string, ins_string, pos) {
       if (typeof (pos) === 'undefined') {
         pos = 0;
@@ -85,7 +85,12 @@ module.exports = {
       const factory = new Factory();
       const runner = factory.createRunner(lang.toLowerCase());
 
-      const directory = path.join(__dirname, '../templates');
+      const dir = path.join(__dirname, `../templates/${folderName}`);
+
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      const directory = dir;
       const file = `${directory}/${fileNamee}`;
       console.log(`file: ${file}`);
       const filename = path.parse(`${directory}/${fileNamee}`).name; // main
