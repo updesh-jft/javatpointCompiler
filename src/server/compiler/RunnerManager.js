@@ -78,7 +78,7 @@ module.exports = {
         url,
         fileName
       };
-      result.url = `http://localhost:8888/${fileNamee}.html`;
+      result.url = `https://javatpoint.tech/compiler/${fileNamee}.html`;
       result.fileName = `${fileNamee}.html`;
       res.end(JSON.stringify(result));
     } else {
