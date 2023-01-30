@@ -35,7 +35,6 @@ function Factory() {
 const checkJavaScriptFunction = (code) => {
   const functionCall = [];
   const matchCount = code.match(/function/g).length;
-  console.log('🚀 ~ file: RunnerManager.js:38 ~ matchCount', matchCount);
   for (let i = 0; i < matchCount; i++) {
     const fun = `${(code.split('function')[i + 1]).split('{')[0]};`;
     if (!fun.includes('script')) {
@@ -56,6 +55,14 @@ module.exports = {
         ins_string = '';
       }
       return main_string.slice(0, pos) + ins_string + main_string.slice(pos);
+    }
+    function getFileName(code_string) {
+      let fun;
+      const matchCount = code.match(/class/g).length;
+      for (let i = 0; i < matchCount; i++) {
+        fun = `${(code_string.split('class')[i + 1]).split('{')[0]}`;
+      }
+      return fun;
     }
     if (lang === 'xml' || lang === 'html') {
       const directory = path.join(__dirname, '../templates');
@@ -90,6 +97,7 @@ module.exports = {
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
+      fileNamee = `${getFileName(code).replace(/ /g, '')}.${lang}`;
       const directory = dir;
       const file = `${directory}/${fileNamee}`;
       console.log(`file: ${file}`);
@@ -100,17 +108,25 @@ module.exports = {
       const stream = fs.createWriteStream(`${directory}/${fileNamee}`);
       stream.write(code);
       FileApi.saveFile(file, code, () => {
-        runner.run(file, directory, filename, extension, (status, message, output) => {
-          const result = {
-            status,
-            message,
-            output,
-            filename
-          };
-          if (status === '1') {
-            res.end(JSON.stringify(result));
-          }
-        });
+        try {
+          runner.run(file, directory, filename, extension, (status, message, output) => {
+            const result = {
+              status,
+              message,
+              output,
+              filename
+            };
+
+            if (status === '1') {
+              res.end(JSON.stringify(result));
+            }
+            if (status === '2') {
+              res.end(JSON.stringify(result));
+            }
+          });
+        } catch (err) {
+          console.log('error', err);
+        }
       });
     }
   },
